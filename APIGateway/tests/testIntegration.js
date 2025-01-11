@@ -15,6 +15,15 @@ describe("API Gateway Integration Tests", () => {
         mqttClient.end();
     });
 
+    it("should return 400 for missing fields in login", async () => {
+        const response = await request(app)
+            .post("/login")
+            .send({ username: "user1" }); // Missing password
+
+        expect(response.status).toBe(400);
+        expect(response.body.message).toBe("Missing required fields");
+    });
+
     // Subscribe to the MQTT topic
     mqttClient.subscribe(topic, (err) => {
         if (err) return done(err);

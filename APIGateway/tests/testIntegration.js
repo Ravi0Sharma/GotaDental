@@ -60,10 +60,27 @@ describe("API Gateway Integration Tests", () => {
         expect(response.body.message).toBe("User registered successfully");
     });
 
-    // Subscribe to the MQTT topic
-    mqttClient.subscribe(topic, (err) => {
-        if (err) return done(err);
+    it("should publish a message to the MQTT topic on registration", (done) => {
+        const topic = "patients/register";
+        const messageContent = { username: "newUser", status: "registered" };
+        // Subscribe to the MQTT topic
+        mqttClient.subscribe(topic, (err) => {
+            if (err) return done(err);
 
+            // Simulate a registration request
+            request(app)
+                .post("/register")
+                .send({ username: "newUser", password: "securePass123" })
+                .end(() => {
+                    mqttClient.on("message", (receivedTopic, message) => {
+                        if (receivedTopic === topic) {
+                            const receivedMessage = JSON.parse(message.toString());
+                            expect(receivedMessage.username).toBe(messageContent.username);
+                            expect(receivedMessage.status).toBe(messageContent.status);
+                            done();
+                        }
+                    });
+                });
+        });
     });
 });
-

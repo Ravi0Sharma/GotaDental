@@ -51,6 +51,15 @@ describe("API Gateway Integration Tests", () => {
         expect(response.body.message).toBe("User registered successfully");
     });
 
+    it("should return 201 Created for a successful registration", async () => {
+        const response = await request(app)
+            .post("/register")
+            .send({ username: "newUser", password: "securePass123" });
+
+        expect(response.status).toBe(201);
+        expect(response.body.message).toBe("User registered successfully");
+    });
+
     // Subscribe to the MQTT topic
     mqttClient.subscribe(topic, (err) => {
         if (err) return done(err);

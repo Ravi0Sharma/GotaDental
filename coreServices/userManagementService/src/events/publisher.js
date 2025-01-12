@@ -7,6 +7,8 @@ let channel;
 
 
 // Connect to RabbitMQ and create the channel
+// Connect to RabbitMQ and create the channel
+// Connect to RabbitMQ and create the channel
 async function connectRabbitMQ() {
     let retryCount = 0;
     const maxRetries = 5;
@@ -14,7 +16,12 @@ async function connectRabbitMQ() {
 
     async function attemptReconnect() {
         try {
-            connection = await amqp.connect('amqp://rabbitmq:5672');
+            const connection = await amqp.connect({
+                protocol: 'amqp',
+                hostname: 'rabbitmq',
+                port: 5672,
+                heartbeat: 10, // Heartbeat to keep connection alive
+            });
             connection.on('error', (err) => {
                 console.error('Connection error:', err);
             });
@@ -44,10 +51,12 @@ async function connectRabbitMQ() {
                 process.exit(1);
             }
         }
-    }
 
+    }
     attemptReconnect(); // Start the connection attempt
 }
+
+
 
 //Publish messages 
 async function publishMessage(topic, message, correlationId) {
@@ -58,8 +67,8 @@ async function publishMessage(topic, message, correlationId) {
 
     return new Promise(async (resolve, reject) => {
         console.log(`Publishing to topic: ${topic}`);
-console.log(`Message:`, message);
-console.log(`Correlation ID: ${correlationId}`);
+        console.log(`Message:`, message);
+        console.log(`Correlation ID: ${correlationId}`);
         const timeout = setTimeout(() => {
             reject(new Error(`Timeout waiting for response on correlationId: ${correlationId}`));
         }, 10000); // 10-second timeout for the response
